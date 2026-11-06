@@ -166,17 +166,20 @@
             font-size: min(3.81vw, 23px);
             font-weight: 400;
         }
-		    /* 新增：只针对请假时间行 */
 		.row-item.time-row {
-			height: min(4.762vw, 30px); 
+			height: auto; 
 			min-height: min(4.762vw, 30px);
-			white-space: nowrap;
-			align-items: center;
+			white-space: normal;
+			align-items: flex-start;
 		}
-
+        .row-item.time-row .label-text {
+            white-space: nowrap;
+            line-height: min(4.762vw, 30px);
+        }
 		.row-item.time-row .value-text {
 			word-break: normal;
 			overflow-wrap: anywhere;
+			word-break: break-all; 
 			line-height: min(4.762vw, 30px);
 		}
         .value-text {
@@ -212,6 +215,8 @@
             font-weight: 400;
             cursor: default;
             pointer-events: none;
+			display: none;
+
         }
         .corner-tag-orange,
         .corner-tag-purple {
@@ -227,6 +232,9 @@
             pointer-events: none;
             z-index: 2;
         }
+		.corner-tag-pending::before {
+            background: #ff7a45 !important;
+        }
         .corner-tag-orange::before,
         .corner-tag-purple::before {
             content: "";
@@ -241,21 +249,20 @@
             background: #9854d1;
         }
 		.corner-tag-orange span,
-		.corner-tag-purple span {
-			position: absolute;
-			inset: 0;          /* top right bottom left全部为0 */
-			margin: auto;      /* 自动居中 */
-			width: min(10vw, 20px);
-			height: min(10vw, 20px);
-			display: flex;
-			align-items: center;
-			justify-content: center;
-			font-weight: 300;  /* 字体变细 */
-			font-size: min(2.5vw, 14px);   /* 随屏幕变化 */
-			text-align: center;
-			transform: rotate(-45deg) translate(min(0.6vw, 10px), min(2.0vw, 12px));
-		}
-        /* 新增：强制绘制右下角白色三角缺口，不再依赖文字溢出 */
+        .corner-tag-purple span {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            width: min(10vw, 20px);
+            height: min(10vw, 20px);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 300;
+            font-size: min(2.1vw, 14px);
+            text-align: center;
+            transform: translate(-20%, -25%) rotate(-45deg);
+        }
         .corner-tag-orange::after,
         .corner-tag-purple::after {
             content: "";
@@ -291,91 +298,157 @@
         .btn-bottom:active {
             opacity: 0.8;
         }
+		/* 顶部提示条样式 */
+        .alert-banner {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            width: 100%;
+            padding: 14px 0;
+            background-color: #f7f7f7;
+            color: #c03964;
+            font-size: min(3.8vw, 15px);
+            font-weight: 500;
+            position: sticky;
+            top: 0;
+            z-index: 10;
+        }
+
+        .alert-icon {
+            width: min(4.5vw, 18px);
+            height: min(4.5vw, 18px);
+            transform: none;
+        }
+
+        /* --- 新增：审批流程时间轴样式 --- */
+                /* --- 审批流程时间轴样式 --- */
+        .timeline-container {
+            margin-top: 0px;
+            padding-top: 10px;
+            position: relative;
+         
+			background-color: #f4f5f7; /* 【新增这行】给轨道铺上浅灰底 */
+        }
+
+        /* 贯穿上下的竖线 */
+        .timeline-container::before {
+            content: '';
+            position: absolute;
+            top: 30px;
+            bottom: 20px;
+            left: 14px; /* 竖线固定在左侧 14px 处 */
+            width: 1px;
+            background-color: #dcdcdc;
+            z-index: 1;
+        }
+
+        .timeline-item {
+            position: relative;
+            padding-left: 35px; /* 让卡片整体往右退，给左侧的线和点留出位置 */
+            margin-bottom: 12px;
+        }
+
+        /* 默认圆点（已通过：青色） */
+        .timeline-item::before {
+            content: '';
+            position: absolute;
+            top: 20px; /* 与标题文字垂直对齐 */
+            left: 14px; /* 先放到和线同一位置 */
+            transform: translateX(-50%); /* 再向左偏移自身一半宽度，完美压正线上 */
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background-color: #27e2d4;
+            border: 2px solid #fff; /* 白色外圈，遮挡底下的竖线 */
+            box-sizing: content-box;
+            z-index: 2;
+        }
+
+        /* 第一个待审批圆点（空心带浅蓝边） */
+        .timeline-item:first-child::before {
+            background-color: #fff; /* 内部填充白色，这样线就不会透过来 */
+            border: 2px solid #5dc2df; 
+            width: 8px;
+            height: 8px;
+            z-index: 2;
+        }
+
+        /* 卡片主体 */
+        .timeline-content {
+            background-color: #fff;
+            border-radius: 8px;
+            padding: 16px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.03);
+        }
+
+        .card-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 12px;
+        }
+
+        .role {
+            font-size: 16px;
+            font-weight: 600;
+            color: #222;
+        }
+
+        .date {
+            font-size: 13px;
+            color: #999;
+        }
+
+        .card-body {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-size: 14px;
+        }
+
+        .comment {
+            color: #666;
+        }
+
+        .status.success {
+            color: #27e2d4;
+            font-weight: 700;
+        }
+
+        .status.pending {
+            color: #ff7a45;
+            font-weight: 700;
+        }
     </style>
 </head>
 <body>
+	<!-- 顶部提示条 -->
+	<div class="alert-banner">
+		<svg class="alert-icon" viewBox="0 0 1024 1024" fill="currentColor">
+			<path d="M512 960c-35.346 0-64-28.654-64-64h128c0 35.346-28.654 64-64 64z M840 720c0-4.418-3.582-8-8-8H192c-4.418 0-8 3.582-8 8v32c0 4.418 3.582 8 8 8h640c4.418 0 8-3.582 8-8v-32z M725.8 652c-19.2-33.6-31.2-72.8-35.2-113.6L678 180.4C666 96 591.2 32 502 32s-164 64-176 148.4l-12.6 358c-4 40.8-16 80-35.2 113.6H725.8z"></path>
+		</svg>
+		<span>当前状态不能请假或有请假未完成！</span>
+	</div>
+
     <!-- 请假列表 -->
     <div id="leaveListContainer">
-        <!-- 默认第一条：待销假 -->
-        <div class="leave-card has-student" data-record-id="default-20260826" data-start-time="2026-08-26T23:44">
-            <div class="corner-tag-orange"><span>待销假</span></div>
-            <div class="row-item">
-                <span class="label-text">学号</span>
-                <span class="value-text">2025903066</span>
-                <span class="detail-link" onclick="showDetail(this.closest('.leave-card'))">查看详情 ›</span>
-            </div>
-            <div class="row-item">
-                <span class="label-text">姓名</span>
-                <span class="value-text">王贺</span>
-            </div>
-            <div class="row-item time-row">
-                <span class="label-text">请假时间</span>
-                <span class="value-text time-value">2026-08-26 23:44至2026-08-27 07:44</span>
-            </div>
-            <div class="row-item">
-                <span class="label-text">请假时长</span>
-                <span class="value-text">0天8小时</span>
-            </div>
-            <div class="row-item">
-                <span class="label-text">是否续假</span>
-                <span class="value-text">否</span>
-            </div>
-            <div class="row-item">
-                <span class="label-text">请假原因</span>
-                <span class="value-text">校外:周末外出</span>
-            </div>
-            <div class="row-item">
-                <span class="label-text">销假状态</span>
-                <span class="value-text status-text">待销假</span>
-            </div>
-            <button class="btn-teal" type="button">请假条</button>
-        </div>
-        <!-- 默认第二条：已销假 -->
-        <div class="leave-card has-student" data-record-id="default-20260719" data-start-time="2026-07-19T11:40">
-            <div class="corner-tag-purple"><span>已销假</span></div>
-            <div class="row-item">
-                <span class="label-text">学号</span>
-                <span class="value-text">2025903066</span>
-                <span class="detail-link" onclick="showDetail(this.closest('.leave-card'))">查看详情 ›</span>
-            </div>
-            <div class="row-item">
-                <span class="label-text">姓名</span>
-                <span class="value-text">王贺</span>
-            </div>
-			<div class="row-item time-row">
-				<span class="label-text">请假时间</span>
-				<span class="value-text time-value">2026-07-19 11:40至2026-07-19 19:40</span>
-            </div>
-            <div class="row-item">
-                <span class="label-text">请假时长</span>
-                <span class="value-text">0天8小时</span>
-            </div>
-            <div class="row-item">
-                <span class="label-text">是否续假</span>
-                <span class="value-text">否</span>
-            </div>
-            <div class="row-item">
-                <span class="label-text">请假原因</span>
-                <span class="value-text">校外:周末外出</span>
-            </div>
-            <div class="row-item">
-                <span class="label-text">销假状态</span>
-                <span class="value-text status-text">已销假</span>
-            </div>
-            <button class="btn-teal" type="button">请假条</button>
-        </div>
-        <div class="list-end">已经到底了哦</div>
+            <div class="list-end">已经到底了哦</div>
     </div>
     <!-- 提交请假按钮 -->
-        <button class="btn-bottom" onclick="jumpToSubmitPage()">提交请假</button>
-       <script>
+    <button class="btn-bottom" onclick="jumpToSubmitPage()">提交请假</button>
+
+    <script>
 		if (!history.state || !history.state.leaveList) {
 			history.pushState({ leaveList: true }, '', location.href);
-			}
-			window.addEventListener('popstate', () => {
+		}
+		window.addEventListener('popstate', () => {
 			// 关闭当前页面
 			window.close();
-			});
+		});
+		 
+
+
         window.onload = function(){
             const leaveList = migrateLeaveList();
             renderNewLeaveCards(leaveList);
@@ -441,9 +514,14 @@
         function sortLeaveCards(){
             const container = document.getElementById('leaveListContainer');
             const endMarker = container.querySelector('.list-end');
-            Array.from(container.querySelectorAll('.leave-card'))
-                .sort((a, b) => new Date(b.dataset.startTime) - new Date(a.dataset.startTime))
-                .forEach(card => container.insertBefore(card, endMarker));
+            Array.from(container.querySelectorAll('.card-wrapper'))
+                .sort((a, b) => {
+                    // 【改这里】从里面的 .leave-card 获取时间
+                    const timeA = new Date(a.querySelector('.leave-card').dataset.startTime);
+                    const timeB = new Date(b.querySelector('.leave-card').dataset.startTime);
+                    return timeB - timeA;
+                })
+                .forEach(wrapper => container.insertBefore(wrapper, endMarker));
         }
 
         function attachLongPressHandlers(){
@@ -466,44 +544,150 @@
             });
         }
 
-        function renderNewLeaveCards(leaveList){
+                function renderNewLeaveCards(leaveList){
             const container = document.getElementById('leaveListContainer');
-            const cardsHtml = leaveList.map(item => {
+            const mockList = [];
+            const reasons = ['实习实践', '事假', '病假', '回家', '周末外出'];
+            for (let i = 1; i <= 5; i++) {
+                const pastDate = new Date();
+                pastDate.setDate(pastDate.getDate() - (i * 2)); // 往前推 2, 4, 6 天
+                const endDate = new Date(pastDate);
+                endDate.setHours(endDate.getHours() + 4 + i); // 请假时长
+                
+                mockList.push({
+                    id: 'mock-' + i,
+                    startTime: pastDate.toISOString(), // 保持标准 ISO 格式
+                    endTime: endDate.toISOString(),
+                    reason: reasons[Math.floor(Math.random() * reasons.length)],
+                    status: '已销假', // 历史卡片全部设为已销假
+                    duration: `${Math.floor(i/2)}天${4+i}小时`
+                });
+            }
+            // 把假数据和真实数据合并，放在后面
+            const fullList = [...leaveList, ...mockList];
+            // 【1】先把列表按时间倒序排好，确保第一条是最新的
+            const sortedList = [...fullList].sort((a, b) => new Date(b.startTime) - new Date(a.startTime));
+
+            const cardsHtml = sortedList.map((item, index) => {
                 const showTime = formatIsoTime(item.startTime) + "至" + formatIsoTime(item.endTime);
-                const durationStr = formatDuration(item.startTime, item.endTime);
+                const durationStr = item.duration || formatDuration(item.startTime, item.endTime);
+                
+                // 【2】判断：是不是第一条（最新），且理由是“实习实践”
+                const isLatest = index === 0;
+                const isInternship = item.reason && item.reason.includes('实习实践');
+                
+                let timelineHtml = '';
+                let ribbonHtml = '';
+
+                // 【3】只有同时满足“最新”和“实习实践”，才渲染时间轴和审批中角标
+                if (isLatest && isInternship) {
+                
+                    timelineHtml = `
+                    <div class="timeline-container">
+                        <!-- 内部的时间轴节点代码保持原样 -->
+                        <div class="timeline-item">
+                            <div class="timeline-content">
+                                <div class="card-header">
+                                    <span class="role">分管校领导</span>
+                                </div>
+                                <div class="card-body">
+                                    <span class="comment">意见：</span>
+                                    <span class="status pending">待审批</span>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="timeline-item">
+                            <div class="timeline-content">
+                                <div class="card-header">
+                                    <span class="role">学院</span>
+                                    <span class="date">2026-11-04</span>
+                                </div>
+                                <div class="card-body">
+                                    <span class="comment">意见：同意</span>
+                                    <span class="status success">已通过</span>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="timeline-item">
+                            <div class="timeline-content">
+                                <div class="card-header">
+                                    <span class="role">大队长</span>
+                                    <span class="date">2026-11-04</span>
+                                </div>
+                                <div class="card-body">
+                                    <span class="comment">意见：同意</span>
+                                    <span class="status success">已通过</span>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="timeline-item">
+                            <div class="timeline-content">
+                                <div class="card-header">
+                                    <span class="role">学管干部</span>
+                                    <span class="date">2026-11-03</span>
+                                </div>
+                                <div class="card-body">
+                                    <span class="comment">意见：同意</span>
+                                    <span class="status success">已通过</span>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="timeline-item">
+                            <div class="timeline-content">
+                                <div class="card-header">
+                                    <span class="role">学生申请</span>
+                                    <span class="date">2026-11-03</span>
+                                </div>
+                                <div class="card-body">
+                                    <span class="comment">王贺(2025903037)发起申请</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    `;
+                }
+
+                // 生成大卡片
                 return `
-                <div class="leave-card has-student" data-record-id="${item.id}" data-start-time="${item.startTime}">
-                    <div class="corner-tag-orange"><span>待销假</span></div>
-                    <div class="row-item">
-                        <span class="label-text">学号</span>
-                        <span class="value-text">2025903066</span>
-                        <span class="detail-link" onclick="showDetail(this.closest('.leave-card'))">查看详情 ›</span>
+                <div class="card-wrapper">
+                    <div class="leave-card has-student" data-record-id="${item.id}" data-start-time="${item.startTime}">
+                        ${ribbonHtml}
+                        <!-- 如果有时间轴，右下角显示审批中；否则显示原状态 -->
+                        ${(isLatest && isInternship) 
+                            ? `<div class="corner-tag-orange corner-tag-pending"><span>审批中</span></div>` 
+                            : `<div class="corner-tag-orange"><span>${item.status || '待销假'}</span></div>`
+                        }
+                        <div class="row-item">
+                            <span class="label-text">学号</span>
+                            <span class="value-text">2025903066</span>
+                            <span class="detail-link" onclick="showDetail(this.closest('.leave-card'))">查看详情 ›</span>
+                        </div>
+                        <div class="row-item">
+                            <span class="label-text">姓名</span>
+                            <span class="value-text">王贺</span>
+                        </div>
+                        <div class="row-item time-row">
+                            <span class="label-text">请假时间</span>
+                            <span class="value-text time-value">${showTime}</span>
+                        </div>
+                        <div class="row-item">
+                            <span class="label-text">请假时长</span>
+                            <span class="value-text">${durationStr}</span>
+                        </div>
+                        <div class="row-item">
+                            <span class="label-text">是否续假</span>
+                            <span class="value-text">否</span>
+                        </div>
+                        <div class="row-item">
+                            <span class="label-text">请假原因</span>
+                            <span class="value-text">${formatReason(item.reason)}</span>
+                        </div>
+                        <div class="row-item">
+                            <span class="label-text">销假状态</span>
+                            <span class="value-text status-text">${item.status}</span>
+                        </div>
                     </div>
-                    <div class="row-item">
-                        <span class="label-text">姓名</span>
-                        <span class="value-text">王贺</span>
-                    </div>
-                    <div class="row-item time-row">
-                        <span class="label-text">请假时间</span>
-                        <span class="value-text time-value">${showTime}</span>
-                    </div>
-                    <div class="row-item">
-                        <span class="label-text">请假时长</span>
-                        <span class="value-text">${durationStr}</span>
-                    </div>
-                    <div class="row-item">
-                        <span class="label-text">是否续假</span>
-                        <span class="value-text">否</span>
-                    </div>
-                    <div class="row-item">
-                        <span class="label-text">请假原因</span>
-                        <span class="value-text">${formatReason(item.reason)}</span>
-                    </div>
-                    <div class="row-item">
-                        <span class="label-text">销假状态</span>
-                        <span class="value-text status-text">${item.status}</span>
-                    </div>
-                    <button class="btn-teal" type="button">请假条</button>
+                    ${timelineHtml}
                 </div>
                 `;
             }).join('');
@@ -553,23 +737,31 @@
                 const status = isLatest && savedStatus !== '已销假' ? '待销假' : '已销假';
                 if (status === '待销假') hasPending = true;
                 const tag = card.querySelector('[class^="corner-tag-"]');
-                tag.className = status === '待销假' ? 'corner-tag-orange' : 'corner-tag-purple';
-                tag.querySelector('span').textContent = status;
+				if (tag.classList.contains('corner-tag-pending')) {
+					// 如果已经是审批中样式，就保持“审批中”不覆盖
+					tag.querySelector('span').textContent = '审批中';
+				} else {
+					tag.className = status === '待销假' ? 'corner-tag-orange' : 'corner-tag-purple';
+					tag.querySelector('span').textContent = status;
+				}
                 const statusRow = Array.from(card.querySelectorAll('.row-item')).find(row =>
                     row.querySelector('.label-text').textContent === '销假状态'
                 );
                 statusRow.querySelector('.value-text').textContent = status;
                 statusOverrides[card.dataset.recordId] = status;
             });
-            document.querySelector('.btn-bottom').textContent = hasPending ? '提交续假' : '提交请假';
+            document.querySelector('.btn-bottom').textContent = hasPending ? '提交请假' : '提交请假';
             localStorage.setItem('leaveStatusOverrides', JSON.stringify(statusOverrides));
 
             leaveList.forEach(item => {
                 const card = document.querySelector(`[data-record-id="${item.id}"]`);
+                if(!card) return;
                 const statusRow = Array.from(card.querySelectorAll('.row-item')).find(row =>
                     row.querySelector('.label-text').textContent === '销假状态'
                 );
-                item.status = statusRow.querySelector('.value-text').textContent;
+                if(statusRow) {
+                    item.status = statusRow.querySelector('.value-text').textContent;
+                }
             });
             localStorage.setItem('leaveList', JSON.stringify(leaveList));
         }
