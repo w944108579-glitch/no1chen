@@ -310,8 +310,7 @@
             color: #c03964;
             font-size: min(3.8vw, 15px);
             font-weight: 500;
-            position: sticky;
-            top: 0;
+
             z-index: 10;
         }
 
@@ -639,7 +638,7 @@
                                     <span class="date">2026-11-03</span>
                                 </div>
                                 <div class="card-body">
-                                    <span class="comment">王贺(2025903037)发起申请</span>
+                                    <span class="comment">${window.siteProfile?.name || '无'}(${window.siteProfile?.studentId || '无'})发起申请</span>
                                 </div>
                             </div>
                         </div>
