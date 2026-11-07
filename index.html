@@ -246,7 +246,7 @@
             background: #ff9a3c;
         }
         .corner-tag-purple::before {
-            background: #9854d1;
+            background: #b77be0;
         }
 		.corner-tag-orange span,
         .corner-tag-purple span {
@@ -423,7 +423,7 @@
 </head>
 <body>
 	<!-- 顶部提示条 -->
-	<div class="alert-banner">
+	<div id="alertBanner" class="alert-banner" hidden>
 		<svg class="alert-icon" viewBox="0 0 1024 1024" fill="currentColor">
 			<path d="M512 960c-35.346 0-64-28.654-64-64h128c0 35.346-28.654 64-64 64z M840 720c0-4.418-3.582-8-8-8H192c-4.418 0-8 3.582-8 8v32c0 4.418 3.582 8 8 8h640c4.418 0 8-3.582 8-8v-32z M725.8 652c-19.2-33.6-31.2-72.8-35.2-113.6L678 180.4C666 96 591.2 32 502 32s-164 64-176 148.4l-12.6 358c-4 40.8-16 80-35.2 113.6H725.8z"></path>
 		</svg>
@@ -454,7 +454,6 @@
             applyStaticOverrides();
             applyUserProfile();
             applyDeletedRecords();
-            sortLeaveCards();
             attachLongPressHandlers();
             updateLeaveStatuses(leaveList);
         }
@@ -498,7 +497,7 @@
                 item.duration = formatDuration(item.startTime, item.endTime);
                 item.reason = normalizeReason(item.reason);
                 return item;
-            }).sort((a, b) => new Date(b.startTime) - new Date(a.startTime));
+            });
             localStorage.setItem('leaveList', JSON.stringify(migrated));
             return migrated;
         }
@@ -506,21 +505,8 @@
         function applyDeletedRecords(){
             const deletedIds = JSON.parse(localStorage.getItem('deletedLeaveRecordIds')) || [];
             document.querySelectorAll('.leave-card').forEach(card => {
-                if (deletedIds.includes(card.dataset.recordId)) card.remove();
+                if (deletedIds.includes(card.dataset.recordId)) card.closest('.card-wrapper').remove();
             });
-        }
-
-        function sortLeaveCards(){
-            const container = document.getElementById('leaveListContainer');
-            const endMarker = container.querySelector('.list-end');
-            Array.from(container.querySelectorAll('.card-wrapper'))
-                .sort((a, b) => {
-                    // 【改这里】从里面的 .leave-card 获取时间
-                    const timeA = new Date(a.querySelector('.leave-card').dataset.startTime);
-                    const timeB = new Date(b.querySelector('.leave-card').dataset.startTime);
-                    return timeB - timeA;
-                })
-                .forEach(wrapper => container.insertBefore(wrapper, endMarker));
         }
 
         function attachLongPressHandlers(){
@@ -534,7 +520,7 @@
                         localStorage.setItem('deletedLeaveRecordIds', JSON.stringify(deletedIds));
                         const leaveList = JSON.parse(localStorage.getItem('leaveList')) || [];
                         localStorage.setItem('leaveList', JSON.stringify(leaveList.filter(item => item.id !== card.dataset.recordId)));
-                        card.remove();
+                        card.closest('.card-wrapper').remove();
                         timer = undefined;
                     }, 3000);
                 });
@@ -545,6 +531,7 @@
 
                 function renderNewLeaveCards(leaveList){
             const container = document.getElementById('leaveListContainer');
+            const alertBanner = document.getElementById('alertBanner');
             const mockList = [];
             const reasons = ['实习实践', '事假', '病假', '回家', '周末外出'];
             for (let i = 1; i <= 5; i++) {
@@ -562,24 +549,23 @@
                     duration: `${Math.floor(i/2)}天${4+i}小时`
                 });
             }
-            // 把假数据和真实数据合并，放在后面
+            // 请假记录按提交顺序保存，新提交的记录始终排在第一张；模拟记录固定排在其后。
             const fullList = [...leaveList, ...mockList];
-            // 【1】先把列表按时间倒序排好，确保第一条是最新的
-            const sortedList = [...fullList].sort((a, b) => new Date(b.startTime) - new Date(a.startTime));
+            const hasTimeline = leaveList.length > 0
+                && normalizeReason(leaveList[0].reason) === '实习实践';
+            alertBanner.hidden = !hasTimeline;
 
-            const cardsHtml = sortedList.map((item, index) => {
+            const cardsHtml = fullList.map((item, index) => {
                 const showTime = formatIsoTime(item.startTime) + "至" + formatIsoTime(item.endTime);
                 const durationStr = item.duration || formatDuration(item.startTime, item.endTime);
                 
-                // 【2】判断：是不是第一条（最新），且理由是“实习实践”
-                const isLatest = index === 0;
-                const isInternship = item.reason && item.reason.includes('实习实践');
+                // 只有最新一条真实记录且原因为“实习实践”时显示审批时间线。
+                const isLatest = index === 0 && hasTimeline;
                 
                 let timelineHtml = '';
                 let ribbonHtml = '';
 
-                // 【3】只有同时满足“最新”和“实习实践”，才渲染时间轴和审批中角标
-                if (isLatest && isInternship) {
+                if (isLatest) {
                 
                     timelineHtml = `
                     <div class="timeline-container">
@@ -651,10 +637,12 @@
                 <div class="card-wrapper">
                     <div class="leave-card has-student" data-record-id="${item.id}" data-start-time="${item.startTime}">
                         ${ribbonHtml}
-                        <!-- 如果有时间轴，右下角显示审批中；否则显示原状态 -->
-                        ${(isLatest && isInternship) 
+                        <!-- 第一张真实请假卡片显示审批中角标 -->
+                        ${isLatest
                             ? `<div class="corner-tag-orange corner-tag-pending"><span>审批中</span></div>` 
-                            : `<div class="corner-tag-orange"><span>${item.status || '待销假'}</span></div>`
+                            : item.status === '已销假'
+                                ? `<div class="corner-tag-purple"><span>已销假</span></div>`
+                                : `<div class="corner-tag-orange"><span>${item.status || '待销假'}</span></div>`
                         }
                         <div class="row-item">
                             <span class="label-text">学号</span>
@@ -726,11 +714,12 @@
 
         function updateLeaveStatuses(leaveList){
             const cards = Array.from(document.querySelectorAll('.leave-card'));
-            const latestCard = cards[0];
+            const latestCard = cards.find(card => !card.dataset.recordId.startsWith('mock-'));
             const statusOverrides = JSON.parse(localStorage.getItem('leaveStatusOverrides')) || {};
             let hasPending = false;
 
             cards.forEach(card => {
+                if (card.dataset.recordId.startsWith('mock-')) return;
                 const isLatest = card === latestCard;
                 const savedStatus = statusOverrides[card.dataset.recordId];
                 const status = isLatest && savedStatus !== '已销假' ? '待销假' : '已销假';
